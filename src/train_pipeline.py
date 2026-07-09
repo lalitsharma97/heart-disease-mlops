@@ -21,16 +21,11 @@ from src.models.save_model import save_model  # noqa: E402
 
 def main():
 
-    # Set MLflow tracking URI to project root
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    project_root = os.path.abspath(os.path.join(script_dir, '..', '..'))
-    mlflow_db_path = os.path.join(project_root, 'mlflow.db')
-    
-    print(f"Project root: {project_root}")
-    print(f"MLflow database path: {mlflow_db_path}")
-    
-    mlflow.set_tracking_uri(f"sqlite:///{project_root}/mlflow.db")
+    # Set MLflow tracking URI to current working directory
+    mlflow.set_tracking_uri("sqlite:///mlflow.db")
     mlflow.set_experiment("Heart Disease Prediction")
+
+    print(f"MLflow database path: {os.path.join(os.getcwd(), 'mlflow.db')}")
 
     # Start MLflow run
     with mlflow.start_run(run_name="Model Training Pipeline"):
@@ -124,6 +119,7 @@ def main():
         print("Training pipeline completed successfully.")
     
     # Verify MLflow database was created
+    mlflow_db_path = os.path.join(os.getcwd(), 'mlflow.db')
     print(f"Current working directory: {os.getcwd()}")
     print(f"MLflow database exists: {os.path.exists(mlflow_db_path)}")
     if os.path.exists(mlflow_db_path):
