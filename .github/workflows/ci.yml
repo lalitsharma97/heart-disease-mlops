@@ -70,7 +70,7 @@ jobs:
           path: artifacts/
 
       - name: Upload MLflow Database
-        if: success()
+        if: success() && hashFiles('mlflow.db') != ''
         uses: actions/upload-artifact@v4
         with:
           name: mlflow-database
