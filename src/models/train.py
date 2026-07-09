@@ -2,7 +2,10 @@ from sklearn.pipeline import Pipeline
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import cross_val_score, GridSearchCV
-from sklearn.metrics import accuracy_score, precision_score, recall_score, roc_auc_score, classification_report
+from sklearn.metrics import (
+    accuracy_score, precision_score, recall_score,
+    roc_auc_score, classification_report
+)
 
 
 def train_models(X_train, y_train, preprocessor):
@@ -66,11 +69,11 @@ def evaluate_models(models, X_test, y_test):
         Dictionary of evaluation results for each model
     """
     results = {}
-    
+
     for name, model in models.items():
         y_pred = model.predict(X_test)
         y_pred_proba = model.predict_proba(X_test)[:, 1]
-        
+
         results[name] = {
             'accuracy': accuracy_score(y_test, y_pred),
             'precision': precision_score(y_test, y_pred),
@@ -78,14 +81,14 @@ def evaluate_models(models, X_test, y_test):
             'roc_auc': roc_auc_score(y_test, y_pred_proba),
             'classification_report': classification_report(y_test, y_pred)
         }
-        
+
         print(f"\n{name} - Test Set Evaluation:")
         print(f"Accuracy: {results[name]['accuracy']:.4f}")
         print(f"Precision: {results[name]['precision']:.4f}")
         print(f"Recall: {results[name]['recall']:.4f}")
         print(f"ROC-AUC: {results[name]['roc_auc']:.4f}")
         print(f"\nClassification Report:\n{results[name]['classification_report']}")
-    
+
     return results
 
 
@@ -107,7 +110,7 @@ def tune_hyperparameters(X_train, y_train, preprocessor):
         'classifier__penalty': ['l2'],
         'classifier__solver': ['liblinear', 'lbfgs']
     }
-    
+
     # Random Forest hyperparameters
     rf_params = {
         'classifier__n_estimators': [50, 100, 200],
@@ -115,32 +118,32 @@ def tune_hyperparameters(X_train, y_train, preprocessor):
         'classifier__min_samples_split': [2, 5, 10],
         'classifier__min_samples_leaf': [1, 2, 4]
     }
-    
+
     # Create pipelines
     lr_pipeline = Pipeline([
         ("preprocessor", preprocessor),
         ("classifier", LogisticRegression(max_iter=1000, random_state=42))
     ])
-    
+
     rf_pipeline = Pipeline([
         ("preprocessor", preprocessor),
         ("classifier", RandomForestClassifier(random_state=42))
     ])
-    
+
     # Grid Search for Logistic Regression
     print("\nTuning Logistic Regression...")
     lr_grid = GridSearchCV(lr_pipeline, lr_params, cv=5, scoring='roc_auc', n_jobs=-1)
     lr_grid.fit(X_train, y_train)
     print(f"Best Logistic Regression params: {lr_grid.best_params_}")
     print(f"Best ROC-AUC: {lr_grid.best_score_:.4f}")
-    
+
     # Grid Search for Random Forest
     print("\nTuning Random Forest...")
     rf_grid = GridSearchCV(rf_pipeline, rf_params, cv=5, scoring='roc_auc', n_jobs=-1)
     rf_grid.fit(X_train, y_train)
     print(f"Best Random Forest params: {rf_grid.best_params_}")
     print(f"Best ROC-AUC: {rf_grid.best_score_:.4f}")
-    
+
     return {
         "Logistic Regression (Tuned)": lr_grid.best_estimator_,
         "Random Forest (Tuned)": rf_grid.best_estimator_

@@ -11,7 +11,10 @@ column_names = [
 ]
 
 # Download the UCI Heart Disease dataset (Cleveland database)
-url = "https://archive.ics.uci.edu/ml/machine-learning-databases/heart-disease/processed.cleveland.data"
+url = (
+    "https://archive.ics.uci.edu/ml/machine-learning-databases/"
+    "heart-disease/processed.cleveland.data"
+)
 
 print("Downloading dataset from UCI Machine Learning Repository...")
 df = pd.read_csv(url, names=column_names, na_values='?')
@@ -31,4 +34,4 @@ print("Dataset downloaded successfully.")
 print(f"Shape: {df.shape}")
 print(f"Columns: {list(df.columns)}")
 print(f"Target distribution:\n{df['target'].value_counts()}")
-print(f"Dataset saved to: data/raw/heart.csv")
+print("Dataset saved to: data/raw/heart.csv")
