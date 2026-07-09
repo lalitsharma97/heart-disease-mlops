@@ -27,7 +27,7 @@ def main():
     X_train, X_test, y_train, y_test, preprocessor = prepare_features(df)
 
     # Train models
-    models = train_models(
+    models, cv_results = train_models(
         X_train,
         y_train,
         preprocessor
