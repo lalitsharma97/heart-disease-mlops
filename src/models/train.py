@@ -59,12 +59,12 @@ def train_models(X_train, y_train, preprocessor):
 def evaluate_models(models, X_test, y_test):
     """
     Evaluate trained models on test set using multiple metrics.
-    
+
     Args:
         models: Dictionary of trained models
         X_test: Test features
         y_test: Test labels
-        
+
     Returns:
         Dictionary of evaluation results for each model
     """
@@ -95,12 +95,12 @@ def evaluate_models(models, X_test, y_test):
 def tune_hyperparameters(X_train, y_train, preprocessor):
     """
     Perform hyperparameter tuning for both models using GridSearchCV.
-    
+
     Args:
         X_train: Training features
         y_train: Training labels
         preprocessor: Preprocessing pipeline
-        
+
     Returns:
         Dictionary of best models after tuning
     """

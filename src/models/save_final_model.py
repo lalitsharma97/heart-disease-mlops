@@ -15,6 +15,7 @@ project_root = os.path.abspath(os.path.join(script_dir, '..', '..'))
 if project_root not in sys.path:
     sys.path.insert(0, project_root)
 
+# flake8: noqa: E402
 from src.features.feature_engineering import prepare_features
 from src.models.train import train_models
 
