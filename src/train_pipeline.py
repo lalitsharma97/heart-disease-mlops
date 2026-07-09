@@ -24,6 +24,11 @@ def main():
     # Set MLflow tracking URI to project root
     script_dir = os.path.dirname(os.path.abspath(__file__))
     project_root = os.path.abspath(os.path.join(script_dir, '..', '..'))
+    mlflow_db_path = os.path.join(project_root, 'mlflow.db')
+    
+    print(f"Project root: {project_root}")
+    print(f"MLflow database path: {mlflow_db_path}")
+    
     mlflow.set_tracking_uri(f"sqlite:///{project_root}/mlflow.db")
     mlflow.set_experiment("Heart Disease Prediction")
 
@@ -117,6 +122,12 @@ def main():
         mlflow.log_artifact("artifacts/models/best_model.pkl", artifact_path="model_artifacts")
 
         print("Training pipeline completed successfully.")
+    
+    # Verify MLflow database was created
+    print(f"Current working directory: {os.getcwd()}")
+    print(f"MLflow database exists: {os.path.exists(mlflow_db_path)}")
+    if os.path.exists(mlflow_db_path):
+        print(f"MLflow database size: {os.path.getsize(mlflow_db_path)} bytes")
 
 
 if __name__ == "__main__":
