@@ -1,14 +1,14 @@
 name: CD Pipeline
 
 on:
-  permissions:
-  contents: read
-  packages: write
-  
   workflow_dispatch:
   push:
     branches:
       - main
+
+permissions:
+  contents: read
+  packages: write
 
 jobs:
 
