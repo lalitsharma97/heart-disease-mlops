@@ -1,0 +1,76 @@
+version: "3.9"
+
+services:
+
+  heart-api:
+
+    container_name: heart-api
+
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+
+    image: localhost/heart-disease-api:v1
+
+    ports:
+      - "8000:8000"
+
+    restart: unless-stopped
+
+    environment:
+      PYTHONUNBUFFERED: "1"
+
+    volumes:
+      - ../logs:/app/logs
+
+    networks:
+      - mlops-net
+
+  prometheus:
+
+    container_name: prometheus
+
+    image: prom/prometheus:latest
+
+    ports:
+      - "9090:9090"
+
+    volumes:
+      - ../monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+
+    restart: unless-stopped
+
+    networks:
+      - mlops-net
+
+  grafana:
+
+    container_name: grafana
+
+    image: grafana/grafana:latest
+
+    ports:
+      - "3000:3000"
+
+    volumes:
+      - ../monitoring/grafana:/etc/grafana/provisioning
+
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+
+    restart: unless-stopped
+
+    networks:
+      - mlops-net
+
+    depends_on:
+      - prometheus
+
+networks:
+
+  mlops-net:

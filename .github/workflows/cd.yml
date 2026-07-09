@@ -1,0 +1,36 @@
+name: CD Pipeline
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+
+  build-and-push:
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - uses: actions/checkout@v4
+
+      - name: Set up Podman
+        uses: redhat-actions/podman-setup@v1
+
+      - name: Log in to GitHub Container Registry
+        uses: redhat-actions/podman-login@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and tag image
+        run: |
+          podman build -t ghcr.io/${{ github.repository }}/heart-disease-api:latest -t ghcr.io/${{ github.repository }}/heart-disease-api:${{ github.sha }} -f docker/Dockerfile .
+
+      - name: Push to GitHub Container Registry
+        run: |
+          podman push ghcr.io/${{ github.repository }}/heart-disease-api:latest
+          podman push ghcr.io/${{ github.repository }}/heart-disease-api:${{ github.sha }}

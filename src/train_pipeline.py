@@ -1,0 +1,92 @@
+"""
+End-to-end model training pipeline.
+"""
+
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from src.data.load_data import load_data  # noqa: E402
+from src.data.preprocess import preprocess_data  # noqa: E402
+from src.features.feature_engineering import prepare_features  # noqa: E402
+from src.models.train import train_models  # noqa: E402
+from src.models.evaluate import evaluate_models  # noqa: E402
+from src.models.model_selection import select_best_model  # noqa: E402
+from src.models.save_model import save_model  # noqa: E402
+
+
+def main():
+
+    # Load data
+    df = load_data()
+
+    # Preprocess data
+    df = preprocess_data(df)
+
+    # Feature engineering
+    X_train, X_test, y_train, y_test, preprocessor = prepare_features(df)
+
+    # Train models
+    models = train_models(
+        X_train,
+        y_train,
+        preprocessor
+    )
+
+    # Evaluate models
+    results = evaluate_models(
+        models,
+        X_train,
+        X_test,
+        y_train,
+        y_test
+    )
+
+    print(results)
+
+    # Select best model
+    best_model = select_best_model(
+        results,
+        models
+    )
+
+    from src.models.evaluate import save_feature_importance
+
+    feature_names = X_train.columns.tolist()
+
+    save_feature_importance(
+        best_model,
+        feature_names
+    )
+
+    # Save model
+    # save_model(best_model)
+
+    # Evaluate best model to get metrics
+    best_model_dict = {
+        best_model.named_steps["classifier"].__class__.__name__:
+        best_model
+    }
+    best_results = evaluate_models(
+        best_model_dict, X_train, X_test, y_train, y_test
+    )
+    best_metrics = best_results.iloc[0].to_dict()
+
+    save_model(
+        model=best_model,
+        metrics=best_metrics
+    )
+
+    from src.models.evaluate import save_classification_report
+
+    save_classification_report(
+        best_model,
+        X_test,
+        y_test
+    )
+
+    print("Training pipeline completed successfully.")
+
+
+if __name__ == "__main__":
+    main()
