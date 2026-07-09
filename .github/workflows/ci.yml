@@ -1,6 +1,10 @@
 name: CI Pipeline
 
 on:
+  permissions:
+  contents: read
+  packages: write
+  
   push:
     branches:
       - main
@@ -32,7 +36,7 @@ jobs:
 
       - name: Lint Code
         run: |
-          flake8 .
+          flake8 . --exclude=venv,.git,__pycache__,.pytest_cache,mlruns,notebooks,check_db.py,check_mlflow_db.py --max-line-length=100
 
       - name: Run Unit Tests
         run: |

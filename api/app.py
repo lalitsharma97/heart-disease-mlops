@@ -15,6 +15,7 @@ app = FastAPI(
 # Set up Prometheus instrumentation before app starts
 Instrumentator().instrument(app).expose(app)
 
+
 @app.on_event("startup")
 def startup_event():
     logger.info("Heart Disease Prediction API started successfully.")
@@ -72,7 +73,7 @@ def predict_heart_disease(data: HeartData):
             "confidence": round(float(probability), 4)
         }
 
-    except Exception as e:
+    except Exception:
 
         logger.exception("Prediction failed.")
 

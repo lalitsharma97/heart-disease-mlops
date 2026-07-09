@@ -3,7 +3,6 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import cross_val_score, GridSearchCV
 from sklearn.metrics import accuracy_score, precision_score, recall_score, roc_auc_score, classification_report
-import numpy as np
 
 
 def train_models(X_train, y_train, preprocessor):

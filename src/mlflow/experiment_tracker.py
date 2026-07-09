@@ -4,9 +4,6 @@ MLflow Experiment Tracking
 
 import mlflow
 import mlflow.sklearn
-import os
-import sys
-from pathlib import Path
 
 
 def log_experiment(
@@ -32,11 +29,11 @@ def log_experiment(
     # Navigate from script location to project root
     script_dir = os.path.dirname(os.path.abspath(__file__))
     project_root = os.path.abspath(os.path.join(script_dir, '..', '..'))
-    
-    # Set tracking URI to project root database (SQLite for metadata, mlruns for artifacts)
+
+    # Set tracking URI to project root database
     tracking_uri = f"sqlite:///{project_root}/mlflow.db"
     mlflow.set_tracking_uri(tracking_uri)
-    
+
     mlflow.set_experiment("Heart Disease Prediction")
 
     with mlflow.start_run(run_name=model_name):
