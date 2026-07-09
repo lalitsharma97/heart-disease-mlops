@@ -29,8 +29,14 @@ jobs:
       - name: Build and tag image
         run: |
           podman build -t ghcr.io/${{ github.repository }}/heart-disease-api:latest -t ghcr.io/${{ github.repository }}/heart-disease-api:${{ github.sha }} -f docker/Dockerfile .
+        continue-on-error: false
 
-      - name: Push to GitHub Container Registry
+      - name: Push latest image to GitHub Container Registry
         run: |
           podman push ghcr.io/${{ github.repository }}/heart-disease-api:latest
+        continue-on-error: false
+
+      - name: Push SHA-tagged image to GitHub Container Registry
+        run: |
           podman push ghcr.io/${{ github.repository }}/heart-disease-api:${{ github.sha }}
+        continue-on-error: false
