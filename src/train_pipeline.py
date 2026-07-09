@@ -6,6 +6,7 @@ import sys
 import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+# flake8: noqa: E402
 import mlflow
 import mlflow.sklearn
 
