@@ -27,8 +27,7 @@ def save_final_model():
     """
 
     # Set MLflow tracking URI to project root database (SQLite for metadata, mlruns for artifacts)
-    notebooks_dir = os.path.abspath(os.path.join(project_root, 'notebooks'))
-    mlflow.set_tracking_uri(f"sqlite:///{notebooks_dir}/mlflow.db")
+    mlflow.set_tracking_uri(f"sqlite:///{project_root}/mlflow.db")
     mlflow.set_experiment("Heart Disease Prediction")
 
     # Load data
