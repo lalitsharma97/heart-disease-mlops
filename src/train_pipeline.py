@@ -6,6 +6,9 @@ import sys
 import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+import mlflow
+import mlflow.sklearn
+
 from src.data.load_data import load_data  # noqa: E402
 from src.data.preprocess import preprocess_data  # noqa: E402
 from src.features.feature_engineering import prepare_features  # noqa: E402
@@ -17,75 +20,102 @@ from src.models.save_model import save_model  # noqa: E402
 
 def main():
 
-    # Load data
-    df = load_data()
+    # Set MLflow tracking URI to project root
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    project_root = os.path.abspath(os.path.join(script_dir, '..', '..'))
+    mlflow.set_tracking_uri(f"sqlite:///{project_root}/mlflow.db")
+    mlflow.set_experiment("Heart Disease Prediction")
 
-    # Preprocess data
-    df = preprocess_data(df)
+    # Start MLflow run
+    with mlflow.start_run(run_name="Model Training Pipeline"):
+        # Load data
+        df = load_data()
+        mlflow.log_param("dataset_size", len(df))
 
-    # Feature engineering
-    X_train, X_test, y_train, y_test, preprocessor = prepare_features(df)
+        # Preprocess data
+        df = preprocess_data(df)
+        mlflow.log_param("preprocessed_size", len(df))
 
-    # Train models
-    models, cv_results = train_models(
-        X_train,
-        y_train,
-        preprocessor
-    )
+        # Feature engineering
+        X_train, X_test, y_train, y_test, preprocessor = prepare_features(df)
+        mlflow.log_param("train_size", len(X_train))
+        mlflow.log_param("test_size", len(X_test))
 
-    # Evaluate models
-    results = evaluate_models(
-        models,
-        X_train,
-        X_test,
-        y_train,
-        y_test
-    )
+        # Train models
+        models, cv_results = train_models(
+            X_train,
+            y_train,
+            preprocessor
+        )
 
-    print(results)
+        # Log cross-validation results
+        for model_name, results in cv_results.items():
+            mlflow.log_metric(f"{model_name}_cv_mean", results['cv_mean'])
+            mlflow.log_metric(f"{model_name}_cv_std", results['cv_std'])
 
-    # Select best model
-    best_model = select_best_model(
-        results,
-        models
-    )
+        # Evaluate models
+        results = evaluate_models(
+            models,
+            X_train,
+            X_test,
+            y_train,
+            y_test
+        )
 
-    from src.models.evaluate import save_feature_importance
+        print(results)
 
-    feature_names = X_train.columns.tolist()
+        # Select best model
+        best_model = select_best_model(
+            results,
+            models
+        )
 
-    save_feature_importance(
-        best_model,
-        feature_names
-    )
+        from src.models.evaluate import save_feature_importance
 
-    # Save model
-    # save_model(best_model)
+        feature_names = X_train.columns.tolist()
 
-    # Evaluate best model to get metrics
-    best_model_dict = {
-        best_model.named_steps["classifier"].__class__.__name__:
-        best_model
-    }
-    best_results = evaluate_models(
-        best_model_dict, X_train, X_test, y_train, y_test
-    )
-    best_metrics = best_results.iloc[0].to_dict()
+        save_feature_importance(
+            best_model,
+            feature_names
+        )
 
-    save_model(
-        model=best_model,
-        metrics=best_metrics
-    )
+        # Evaluate best model to get metrics
+        best_model_dict = {
+            best_model.named_steps["classifier"].__class__.__name__:
+            best_model
+        }
+        best_results = evaluate_models(
+            best_model_dict, X_train, X_test, y_train, y_test
+        )
+        best_metrics = best_results.iloc[0].to_dict()
 
-    from src.models.evaluate import save_classification_report
+        # Log best model metrics to MLflow
+        for metric_name, metric_value in best_metrics.items():
+            if isinstance(metric_value, (int, float)):
+                mlflow.log_metric(f"best_{metric_name}", metric_value)
 
-    save_classification_report(
-        best_model,
-        X_test,
-        y_test
-    )
+        save_model(
+            model=best_model,
+            metrics=best_metrics
+        )
 
-    print("Training pipeline completed successfully.")
+        from src.models.evaluate import save_classification_report
+
+        save_classification_report(
+            best_model,
+            X_test,
+            y_test
+        )
+
+        # Log the best model to MLflow
+        mlflow.sklearn.log_model(
+            best_model,
+            artifact_path="model",
+            serialization_format="pickle"
+        )
+        mlflow.log_artifact("artifacts/models/best_model.pkl", artifact_path="model_artifacts")
+
+        print("Training pipeline completed successfully.")
 
 
 if __name__ == "__main__":
